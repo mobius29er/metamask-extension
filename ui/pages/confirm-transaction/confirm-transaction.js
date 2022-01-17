@@ -12,7 +12,6 @@ import ConfirmApprove from '../confirm-approve';
 import ConfirmTokenTransactionBaseContainer from '../confirm-token-transaction-base';
 import ConfirmDecryptMessage from '../confirm-decrypt-message';
 import ConfirmEncryptionPublicKey from '../confirm-encryption-public-key';
-
 import {
   CONFIRM_TRANSACTION_ROUTE,
   CONFIRM_DEPLOY_CONTRACT_PATH,
@@ -43,8 +42,9 @@ import {
   setTransactionToConfirm,
   clearConfirmTransaction,
 } from '../../ducks/confirm-transaction/confirm-transaction.duck';
+import { isTokenMethodAction } from '../../helpers/utils/transactions.util';
 import ConfTx from './conf-tx';
-import { useAssetDetails } from '../../hooks/useAssetDetails';
+import { ConfirmTokenTransactionSwitch } from './confirm-token-transaction-switch';
 
 export const ConfirmTransaction = () => {
   const [pollingToken, setPollingToken] = useState(null);
@@ -63,25 +63,7 @@ export const ConfirmTransaction = () => {
     ? unapprovedTxs[paramsTransactionId] || unconfirmedTransactions[0]
     : {};
 
-  // const isTokenMethodAction = isTokenMethodAction(type);
-
-  const {
-    id: transactionId,
-    type,
-    txParams: { data, to: tokenAddress, from: userAddress } = {},
-  } = transaction;
-
-  const {
-    assetStandard,
-    assetName,
-    userBalance,
-    tokenSymbol,
-    decimals,
-    tokenImage,
-    toAddress,
-    tokenAmount,
-    tokenId,
-  } = useAssetDetails(tokenAddress, userAddress, data);
+  const { id: transactionId, type, txParams: { data } = {} } = transaction;
 
   const beforeUnload = () => {
     setIsMounted(false);
@@ -113,10 +95,6 @@ export const ConfirmTransaction = () => {
     }
 
     getContractMethodData(data);
-
-    // if (isTokenMethodAction) {
-    //   getTokenParams(to);
-    // }
 
     const txId = transactionId || paramsTransactionId;
     if (txId) {
@@ -164,11 +142,18 @@ export const ConfirmTransaction = () => {
     data,
   ]);
 
+  const validTransactionId =
+    transactionId &&
+    (!paramsTransactionId || Number(paramsTransactionId) === transactionId);
+
+  if (isTokenMethodAction(type) && validTransactionId) {
+    return <ConfirmTokenTransactionSwitch transaction={transaction} />;
+  }
+
   // Show routes when state.confirmTransaction has been set and when either the ID in the params
   // isn't specified or is specified and matches the ID in state.confirmTransaction in order to
   // support URLs of /confirm-transaction or /confirm-transaction/<transactionId>
-  return transactionId &&
-    (!paramsTransactionId || Number(paramsTransactionId) === transactionId) ? (
+  return validTransactionId ? (
     <Switch>
       <Route
         exact
@@ -177,15 +162,15 @@ export const ConfirmTransaction = () => {
       />
       <Route
         exact
-        path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_TOKEN_METHOD_PATH}`}
-        component={ConfirmTransactionBase}
-      />
-      <Route
-        exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_SEND_ETHER_PATH}`}
         component={ConfirmSendEther}
       />
-      <Route
+      {/* <Route
+        exact
+        path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_TOKEN_METHOD_PATH}`}
+        component={ConfirmTransactionBase}
+      /> */}
+      {/* <Route
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_SEND_TOKEN_PATH}`}
         component={ConfirmSendToken}
@@ -199,20 +184,7 @@ export const ConfirmTransaction = () => {
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${CONFIRM_TRANSFER_FROM_PATH}`}
         component={ConfirmTokenTransactionBaseContainer}
-        // render={() => {
-        //   <ConfirmTokenTransactionBaseContainer
-        //     assetStandard={assetStandard}
-        //     assetName={assetName}
-        //     userBalance={userBalance}
-        //     tokenSymbol={tokenSymbol}
-        //     decimals={decimals}
-        //     tokenImage={tokenImage}
-        //     toAddress={toAddress}
-        //     tokenAmount={tokenAmount}
-        //     tokenId={tokenId}
-        //   />;
-        // }}
-      />
+      /> */}
       <Route
         exact
         path={`${CONFIRM_TRANSACTION_ROUTE}/:id?${SIGNATURE_REQUEST_PATH}`}
