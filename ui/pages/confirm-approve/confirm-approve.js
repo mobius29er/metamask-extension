@@ -45,21 +45,32 @@ const isAddressLedgerByFromAddress = (address) => (state) => {
   return isAddressLedger(state, address);
 };
 
-export default function ConfirmApprove() {
+export default function ConfirmApprove({
+  assetStandard,
+  assetName,
+  userBalance,
+  tokenSymbol,
+  decimals,
+  tokenImage,
+  toAddress,
+  tokenAmount,
+  tokenId,
+  userAddress,
+  tokenAddress,
+  transaction,
+}) {
   const dispatch = useDispatch();
-  const { id: paramsTransactionId } = useParams();
-  const { id: transactionId } = useSelector(txDataSelector);
-  const currentNetworkTxList = useSelector(currentNetworkTxListSelector);
-  const transaction =
-    currentNetworkTxList.find(
-      ({ id }) => id === (Number(paramsTransactionId) || transactionId),
-    ) || {};
+  // const { id: paramsTransactionId } = useParams();
+  // const { id: transactionId } = useSelector(txDataSelector);
+  // const currentNetworkTxList = useSelector(currentNetworkTxListSelector);
+  // const transaction =
+  //   currentNetworkTxList.find(
+  //     ({ id }) => id === (Number(paramsTransactionId) || transactionId),
+  //   ) || {};
 
   const {
     txParams: {
-      to: tokenAddress,
       data: transactionData,
-      from: userAddress,
     } = {},
   } = transaction;
 
@@ -91,17 +102,17 @@ export default function ConfirmApprove() {
   const eip1559V2Enabled = useSelector(getEIP1559V2Enabled);
   const supportsEIP1559V2 = eip1559V2Enabled && networkAndAccountSupports1559;
 
-  const {
-    assetStandard,
-    assetName,
-    userBalance,
-    tokenSymbol,
-    decimals,
-    tokenImage,
-    toAddress,
-    tokenAmount,
-    tokenId,
-  } = useAssetDetails(tokenAddress, userAddress, transactionData);
+  // const {
+  //   assetStandard,
+  //   assetName,
+  //   userBalance,
+  //   tokenSymbol,
+  //   decimals,
+  //   tokenImage,
+  //   toAddress,
+  //   tokenAmount,
+  //   tokenId,
+  // } = useAssetDetails(tokenAddress, userAddress, transactionData);
 
   const previousTokenAmount = useRef(tokenAmount);
   const {
